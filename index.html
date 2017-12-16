@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>weather forecast</title>
+    <style>
+        ul {
+            list-style: none;
+            border: 1px solid black;
+            width: 200px;
+        }
+        li {
+            font-size: 18px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+<input type="text" placeholder="" id="keyWord">
+<input type="button" value="百度一下" id="search">
+<ul id="lis"></ul>
+<script src="jquery-1.11.1.js"></script>
+<script>
+    $(function () {
+        var url;
+        var jsondata;
+        $("#keyWord").on("keyup",function () {
+            var kd = $("#keyWord").val();
+            url = "http://suggestion.baidu.com/su?wd="+kd+"&json=1&p=3";
+          $.ajax({
+              type : "GET",
+              url : url,
+              dataType : "jsonp",
+              jsonp : "cb",
+//            jsonpCallback: "callback",
+              success : function (data) {
+//                  console.log(data.s);
+                  $("#lis").empty();  //清空上次的内容
+                 $.each(data.s,function (index,ele) {
+                     var li = $("<li>"+data.s[index]+"</li>");
+                     li.appendTo($("#lis"));
+                 })
+              },
+              error : function () {
+                  console.log('fail');
+              }
+          })
+});
+});
+</script>
+<script id="script"></script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        *{margin: 0;padding: 0}
+        ul {
+            list-style: none;
+        }
+        h1 {
+            text-align: center;
+        }
+        #img_container {
+            width: 800px;
+            margin: 0  auto;
+        }
+       #img_container li {
+           width: 200px;
+           float: left;
+       }
+       .category {
+           height: 80px;
+           width: 800px;
+           margin: 0 auto;
+       }
+       img {
+            vertical-align: top;  
+            /* 去除图片默认上下间距 */
+         } 
+       .category li {
+           width: 100px;
+           height: 100%;
+           float: left;
+           margin: 0 ;
+           text-align:  center;
+           line-height: 80px;
+
+       }
+       .category li img {
+           float: left;
+       }
+    </style>
+</head>
+<body>
+    <h1>图片瀑布流+ajax加载</h1>
+    <ul class="category">
+        <li>美女</li>
+        <li>搞笑</li>
+        <li>壁纸</li>
+        <li>明星</li>
+        <li>家居</li>
+        <li>汽车</li>
+        <li>全景</li>
+    </ul>
+    <ul id="img_container">
+       <li></li>
+       <li></li>
+       <li></li>
+       <li></li>
+    </ul>
+</body>
+<script src="jquery-1.11.1.js"></script>
+<script>
+    $(function(){
+        var url = "http://pic.sogou.com/pics/channel/getAllRecomPicByTag.jsp?";
+        var category;
+        var tag = "全部";
+        var len = 15;
+        var start = 0;
+       
+        $(window).on("scroll",function(){
+            // console.log("documentHeight---"+$(document).height());
+            // console.log("windowheight---"+$(window).height());
+            // console.log("scrolltop----"+$(document).scrollTop());
+            if($(document).height() == $(window).height() + $(document).scrollTop()){
+                //页面滚动到了底部
+                start += 15 ;
+                getPics();
+            }
+        });
+
+        $(".category li").on("click",function(ele){
+            category = " "; //每次点击清空这个参数
+            start = 0;
+            len = 15;
+           category = $(this).text();
+           console.log(category);
+            $("#img_container li").html(" ");  //清空上次访问的
+           getPics();
+        
+        });
+
+        //向服务器端获取图片
+        function getPics(){
+            $.ajax({
+                type : "GET",
+                url :url,
+                data : {category : category,tag : tag,start : start,len:len},
+                dataType : "jsonp",
+                // jsonpCallback : "mycallbackname",  //自定义回调函数名称
+                success : function(data,textStatus){
+                    //    console.log(data.all_items); 
+                    var img_list = data.all_items; //图片有关信息的数组
+                    // console.log(img_list.length);
+                    // $.each(img_list,function(index,ele){
+                    //     var _index = getShortestLi(); 
+                    //     // console.log(_index);
+                    //    var $img_url = ele.pic_url;
+                    //     var $img = $("<img width=200 src="+$img_url+">");
+                    //     $img.height(200 /ele.width * ele.height); 
+                    //     $("#img_container li:eq(2)").append($img);
+                    // });
+                    for(var i = 0; i < img_list.length; i++){
+                        var _index = getShortestLi();
+                        // console.log(_index);
+                        var img = $("<img src="+img_list[i].pic_url+" width=200>")
+                        img.height(200/img_list[i].width * img_list[i].height );
+                        $("#img_container li:eq("+_index+")").append(img);
+                    }
+                },
+                error : function(XMLHttpRequest,textStatus,errorThrown){
+                        console.log(XMLHttpRequest);
+                        console.log(textStatus);
+                        console.log(errorThrown);
+                }
+            })
+        }
+        //获取到最短的li，返回该li的index
+        function getShortestLi() {
+            var shortestli_index = 0;
+            var shortestli = 0;
+            var lis = document.getElementById("img_container").getElementsByTagName("li");
+            // console.log(lis[0].offsetHeight);
+            for(var i = 1; i < lis.length; i++) {
+                shortestli = lis[0].offsetHeight;
+                if(lis[i].offsetHeight < shortestli){
+                    shortestli_index = i;
+                }
+                // console.log(lis[i].offsetHeight);
+            }
+            return shortestli_index;
+        }
+
+    })
+</script>
+</html>
